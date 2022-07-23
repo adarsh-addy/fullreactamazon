@@ -66,6 +66,45 @@ Loginrouter.post('/save', async(req, res) => {
     
 })
 
+//user authentication => password
+//decrypt =>comparison
+Loginrouter.post("/userAuth",(req,res)=>{
+    let email=req.body.email;
+    let password=req.body.password;
+    db.getConnection(async(err,connection)=>{
+        if(err) throw (err);
+        const sqlSearch="SELECT * FROM amazon_db WHERE email=?"
+        const search_query = mysql.format(sqlSearch,[email])
+        await connection.query(search_query,async(err,result)=>{
+            if(err) throw(err)
+            if(result.length==0){
+                console.log("----> User does not exist");
+                res.json({
+                    message:"user does not exist"
+                })
+
+                //page redirect to login page
+            }else{
+                console.log('this is result',result);
+                const hasedpassword=result[0].password;
+                console.log(hasedpassword);
+                if(await bcrypt.compare(password,hasedpassword)){
+                    console.log("SignUp Successfull");
+                    res.json({
+                        message:"signup done"
+                    })
+                    //redirect to  frontend's homepage
+                }else{
+                    console.log("password incorrect");
+                    res.json({
+                        message:"incorrect password"
+                    })
+                }
+            }
+        })
+    })
+})
+
 
 // export the router and import in your main file => index.js
 
